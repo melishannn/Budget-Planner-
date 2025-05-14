@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budget Planner</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Saira:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <!-- Chart.js for pie chart -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        // Color palette
+                        'brutal-purple': '#CDB4DB',
+                        'brutal-pink': '#FFC8DD',
+                        'brutal-hot-pink': '#FFAFCC',
+                        'brutal-light-blue': '#BDE0FE',
+                        'brutal-blue': '#A2D2FF',
+                    },
+                    fontFamily: {
+                        'anton': ['Anton', 'sans-serif'],
+                        'saira': ['Saira', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/css">
+        /* Brutalism styles */
+        .brutal-shadow {
+            box-shadow: 8px 8px 0px 0px #000000;
+        }
+
+        .brutal-border {
+            border: 3px solid #000000;
+        }
+
+        .brutal-input {
+            border: 2px solid #000000;
+            background-color: white;
+            padding: 10px;
+            font-family: monospace;
+        }
+
+        .brutal-button {
+            border: 3px solid #000000;
+            padding: 10px 20px;
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .brutal-button:active {
+            transform: translate(4px, 4px);
+            box-shadow: 4px 4px 0px 0px #000000;
+        }
+    </style>
+</head>
+
+<body class="bg-brutal-light-blue min-h-screen p-4 md:p-8 font-saira">
+    <div class="max-w-4xl mx-auto">
+        <!-- Title -->
+        <header class=" bg-brutal-light-blue fixed top-0 left-0 right-0 z-50 shadow-md p-4 h-16">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center">
+                    <!-- Content Overview Text -->
+                    <div>
+                        <h1 class="text-3xl font-bold">Budget Planner</h1>
+                    </div>
+                </div>
+
+                <!-- Budget Limit Feedback -->
+                <div id="budget-feedback"
+                    class="flex items-center justify-center mr-4 brutal-border p-2 bg-white h-10 w-10 rounded-full cursor-pointer">
+                    <span id="budget-emoji" class="text-2xl">😐</span>
+                </div>
+
+                <!-- Profile Icon with Dropdown -->
+                <div class="relative">
+                    <div id="profile-icon" class="w-10 h-10 flex items-center justify-center cursor-pointer">
+                        <img src="https://images.unsplash.com/photo-1604072366595-e75dc92d6bdc?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                            alt="Profile" class="w-full h-full rounded-full object-cover">
+                    </div>
+
+                    <!-- Dropdown Menu (Hidden by default) -->
+                    <div id="profile-dropdown"
+                        class="absolute right-0 top-12 w-48 border border-gray-200 rounded-xl bg-white z-10 hidden shadow-lg">
+                        <ul class="py-1">
+                            <li><a href="#saving-goals"
+                                    class="font-saira block px-4 py-2 hover:bg-gray-100 text-gray-700">Saving Goals</a>
+                            </li>
+                            <li><a href="#new-transaction"
+                                    class="font-saira block px-4 py-2 hover:bg-gray-100 text-gray-700">New
+                                    Transaction</a></li>
+                            <li><a href="#expenditure-analysis"
+                                    class="font-saira block px-4 py-2 hover:bg-gray-100 text-gray-700">Expenditure
+                                    Analysis</a>
+                            </li>
+                            <li><a href="#budget-summary"
+                                    class="font-saira block px-4 py-2 hover:bg-gray-100 text-gray-700">Budget
+                                    Summary</a></li>
+                            <li><a href="#budget-limit"
+                                    class="font-saira block px-4 py-2 hover:bg-gray-100 text-gray-700">Budget Limit</a>
+                            </li>
+                            <li><a href="#transactions"
+                                    class="font-saira block px-4 py-2 hover:bg-gray-100 text-gray-700">Transactions</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+
+        <!-- Main Content -->
+        <main class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-16">
+            <!-- Saving Goals -->
+            <section id="saving-goals" class="brutal-border brutal-shadow bg-brutal-pink p-4">
+                <div class="flex items-center justify-center mb-4">
+                    <h2 class="text-xl font-bold uppercase">SAVING GOALS</h2>
+                </div>
+
+                <div class="space-y-4">
+                    <!-- Goals List Container -->
+                    <div id="goals-list" class="mb-4">
+                        <div class="font-saira text-center p-4 text-gray-500">No goals added yet</div>
+                    </div>
+
+                    <!-- Add/Update Goal Button -->
+                    <button id="show-goal-form"
+                        class="brutal-button brutal-shadow bg-brutal-purple hover:bg-brutal-light-blue w-full text-sm">+
+                        ADD NEW GOAL</button>
+                    <button id="update-goal-btn"
+                        class="brutal-button brutal-shadow bg-brutal-blue hover:bg-brutal-light-blue w-full text-sm hidden">UPDATE
+                        GOAL</button>
+
+                    <!-- Goal Form (Hidden by default) -->
+                    <div id="goal-form-container" class="brutal-border p-4 bg-white mt-4 hidden">
+                        <h3 class="font-bold mb-2">Goal Form</h3>
+                        <form id="goal-form" class="space-y-3">
+                            <div>
+                                <label class="block font-bold-saira mb-1 text-sm">Goal Amount ($):</label>
+                                <input type="number" id="goal-amount" class="w-full brutal-input py-1" required min="1">
+                            </div>
+
+                            <div>
+                                <label class="block font-bold-saira mb-1 text-sm">Current Savings ($):</label>
+                                <input type="number" id="goal-current" class="w-full brutal-input py-1" required
+                                    min="0">
+                            </div>
+
+                            <div class="flex space-x-2">
+                                <button type="submit"
+                                    class="brutal-button bg-brutal-hot-pink font-saira text-sm py-1 px-3 flex-1">Save</button>
+                                <button type="button" id="cancel-goal"
+                                    class="brutal-button bg-white font-saira text-sm py-1 px-3 flex-1">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </section>
+            <!-- New Transaction Form -->
+            <section id="new-transaction" class="brutal-border brutal-shadow bg-brutal-pink p-4">
+                <h2 class="text-xl font-bold mb-4 uppercase">NEW TRANSACTION</h2>
+
+                <form id="transaction-form" class="space-y-4">
+                    <div>
+                        <label class="block font-bold mb-2">Title:</label>
+                        <input type="text" id="title" class="w-full brutal-input" required>
+                    </div>
+
+                    <div>
+                        <label class="block font-bold mb-2">Amount ($):</label>
+                        <input type="number" id="amount" class="w-full brutal-input" required>
+                    </div>
+
+                    <div>
+                        <label class="block font-bold mb-2">Type:</label>
+                        <select id="type" class="w-full brutal-input">
+                            <option value="income">Income</option>
+                            <option value="expense">Expense</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block font-bold mb-2">Category:</label>
+                        <select id="category" class="w-full brutal-input">
+                            <option value="food">Food</option>
+                            <option value="transportation">Transportation</option>
+                            <option value="entertainment">Entertainment</option>
+                            <option value="bills">Bills</option>
+                            <option value="salary"> Salary</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+
+                    <button type="submit"
+                        class="brutal-button brutal-shadow bg-brutal-hot-pink hover:bg-brutal-pink w-full">ADD</button>
+                </form>
+            </section>
+
+            <!-- Expenditure Analysis -->
+            <section id="expenditure-analysis" class="brutal-border brutal-shadow bg-brutal-purple p-4">
+                <h2 class="text-xl font-bold mb-4 uppercase">Expenditure Analysis</h2>
+
+                <div class="flex flex-col items-center">
+                    <!-- Chart Container -->
+                    <div class="w-full max-w-xs mb-4">
+                        <div class="relative">
+                            <canvas id="expense-chart" class="w-full"></canvas>
+                            <div id="expense-total"
+                                class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
+                                <div class="font-saira text-sm">Expense</div>
+                                <div id="expense-amount" class="font-bold text-xl">$0</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chart Legend -->
+                    <div id="chart-legend" class="grid grid-cols-2 gap-x-4 gap-y-2 font-saira text-sm">
+                        <!-- Legend items will be added dynamically -->
+                    </div>
+
+                    <!-- Category Details Modal (Hidden by default) -->
+                    <div id="category-details-modal"
+                        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-20 hidden">
+                        <div class="bg-white p-5 max-w-md w-full mx-4 shadow-lg">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 id="modal-category-title" class="font-bold text-lg">Cab Charge</h3>
+                                <button id="close-modal"
+                                    class="text-gray-400 hover:text-gray-600 text-xl font-bold">×</button>
+                            </div>
+                            <div id="modal-content" class="space-y-4">
+                                <!-- Transaction details styled like the image -->
+                                <div>
+                                    <label class="text-gray-500 text-sm block">Amount</label>
+                                    <div id="modal-amount" class="text-xl font-bold">$153</div>
+                                    <div class="border-b border-gray-200 mt-2"></div>
+                                </div>
+
+                                <div>
+                                    <label class="text-gray-500 text-sm block">Date</label>
+                                    <div id="modal-date" class="text-xl">26/10/2023</div>
+                                    <div class="border-b border-gray-200 mt-2"></div>
+                                </div>
+
+                                <div>
+                                    <label class="text-gray-500 text-sm block mb-2">Select Category</label>
+                                    <div id="modal-categories" class="flex flex-wrap gap-2">
+                                        <!-- Categories will be added dynamically -->
+                                    </div>
+                                </div>
+
+                                <div id="monthly-summary" class="mt-4">
+                                    <label class="text-gray-500 text-sm block mb-2">Monthly Summary</label>
+                                    <div id="monthly-expenses" class="space-y-2">
+                                        <!-- Monthly expense data will be added here -->
+                                    </div>
+                                </div>
+
+                                <button id="modal-update-btn"
+                                    class="brutal-button brutal-shadow bg-brutal-purple hover:bg-brutal-light-blue w-full text-sm">Update
+                                    Expense</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <!-- Budget Limits Section -->
+            <section id="budget-limit" class="brutal-border brutal-shadow bg-brutal-purple p-4">
+                <h2 class="text-xl font-bold mb-4 uppercase">BUDGET LIMITS</h2>
+                <div class="brutal-border p-6 bg-white">
+                    <div class="flex justify-between mb-3">
+                        <span class="text-lg font-bold">Current Expenses:</span>
+                        <span id="current-expenses" class="text-lg font-bold">$1775.00</span>
+                    </div>
+                    <div class="flex justify-between mb-3">
+                        <span class="text-lg font-bold">Budget Limit:</span>
+                        <span id="budget-limit-display" class="text-lg font-bold">$2000.00</span>
+                    </div>
+
+                    <!-- Interactive Budget Slider -->
+                    <div class="relative mt-6 mb-2">
+                        <div class="w-full bg-gray-200 h-4 rounded-full">
+                            <div id="budget-progress" class="bg-yellow-500 h-4 rounded-full" style="width: 85%"></div>
+                        </div>
+                        <!-- Slider Handle Button -->
+                        <div id="slider-handle"
+                            class="absolute top-0 transform -translate-y-1/2 -translate-x-1/2 w-6 h-6 bg-white rounded-full border-2 border-gray-400 shadow-md cursor-grab active:cursor-grabbing"
+                            style="left: 40%"></div>
+                        <input type="range" id="budget-slider"
+                            class="absolute top-0 left-0 w-full h-4 opacity-0 cursor-pointer" min="0" max="5000"
+                            step="100" value="2000">
+                    </div>
+                    <div id="slider-labels" class="flex justify-between text-sm text-gray-500">
+                        <span>$0</span>
+                        <span>$1000</span>
+                        <span>$2000</span>
+                        <span>$3000</span>
+                        <span>$4000</span>
+                        <span>$5000</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Budget Summary -->
+            <section id="budget-summary" class="brutal-border brutal-shadow bg-brutal-blue p-4">
+                <h2 class="text-xl font-bold mb-4 uppercase">BUDGET SUMMARY</h2>
+
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="brutal-border p-3 bg-white">
+                        <h3 class="font-bold text-center">INCOME</h3>
+                        <p id="total-income" class="text-center text-2xl font-mono">$0</p>
+                    </div>
+
+                    <div class="brutal-border p-3 bg-white">
+                        <h3 class="font-bold text-center">EXPENSE</h3>
+                        <p id="total-expense" class="text-center text-2xl font-mono">$0</p>
+                    </div>
+                </div>
+
+                <div class="brutal-border p-3 bg-white mb-6">
+                    <h3 class="font-bold text-center">BALANCE</h3>
+                    <p id="balance" class="text-center text-3xl font-bold">$0</p>
+                </div>
+
+                <div class="brutal-border brutal-shadow bg-brutal-purple p-3">
+                    <h3 class="font-bold text-center mb-2">QUICK STATISTICS</h3>
+                    <div id="stats" class="text-sm font-saira space-y-1">
+                        <p>Biggest expense: <span id="biggest-expense">-</span></p>
+                        <p>Biggest income: <span id="biggest-income">-</span></p>
+                        <p>Most spent category: <span id="most-spent-category">-</span></p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Transactions List -->
+            <section id="transactions" class="brutal-border brutal-shadow bg-white p-4 md:col-span-2">
+                <h2 class="text-xl font-bold mb-4 uppercase">TRANSACTIONS</h2>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full border-collapse brutal-border">
+                        <thead>
+                            <tr>
+                                <th class="brutal-border p-2 bg-brutal-purple text-left">Title</th>
+                                <th class="brutal-border p-2 bg-brutal-purple text-left">Category</th>
+                                <th class="brutal-border p-2 bg-brutal-purple text-left">Amount</th>
+                                <th class="brutal-border p-2 bg-brutal-purple text-left">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactions-list">
+                            <tr>
+                                <td colspan="4" class="brutal-border p-4 text-center">No transactions yet</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script>
+        // Saving Goals variables and functions
+        let savingGoals = [];
+        let currentGoalId = null;
+
+        // Show/hide goal form for adding new goal
+        document.getElementById('show-goal-form').addEventListener('click', function () {
+            // Reset form for new goal
+            document.getElementById('goal-form').reset();
+            currentGoalId = null;
+            document.getElementById('goal-form-container').classList.remove('hidden');
+            this.classList.add('hidden');
+            document.getElementById('update-goal-btn').classList.add('hidden');
+        });
+
+        // Show form for updating existing goal
+        document.getElementById('update-goal-btn').addEventListener('click', function () {
+            document.getElementById('goal-form-container').classList.remove('hidden');
+            this.classList.add('hidden');
+
+            if (savingGoals.length > 0) {
+                const goal = savingGoals[0];
+                currentGoalId = goal.id;
+                document.getElementById('goal-amount').value = goal.targetAmount;
+                document.getElementById('goal-current').value = goal.currentAmount;
+            }
+        });
+
+        // Cancel goal form
+        document.getElementById('cancel-goal').addEventListener('click', function () {
+            document.getElementById('goal-form-container').classList.add('hidden');
+
+            if (savingGoals.length === 0) {
+                // Show add button if no goals
+                document.getElementById('show-goal-form').classList.remove('hidden');
+                document.getElementById('update-goal-btn').classList.add('hidden');
+            } else {
+                // Show update button if goal exists
+                document.getElementById('update-goal-btn').classList.remove('hidden');
+                document.getElementById('show-goal-form').classList.add('hidden');
+            }
+
+            document.getElementById('goal-form').reset();
+            currentGoalId = null;
+        });
+
+        // Handle goal form submission
+        document.getElementById('goal-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            // Get form values
+            const targetAmount = parseFloat(document.getElementById('goal-amount').value);
+            const currentAmount = parseFloat(document.getElementById('goal-current').value);
+
+            if (currentGoalId === null) {
+                // Create new goal
+                const newGoal = {
+                    id: Date.now(),
+                    targetAmount,
+                    currentAmount,
+                    date: new Date().toISOString()
+                };
+
+
+                savingGoals = [newGoal];
+            } else {
+
+                savingGoals = savingGoals.map(goal => {
+                    if (goal.id === currentGoalId) {
+                        return {
+                            ...goal,
+                            targetAmount,
+                            currentAmount,
+                            lastUpdated: new Date().toISOString()
+                        };
+                    }
+                    return goal;
+                });
+            }
+
+
+            localStorage.setItem('savingGoals', JSON.stringify(savingGoals));
+
+            updateGoalsList();
+
+            this.reset();
+            document.getElementById('goal-form-container').classList.add('hidden');
+
+            document.getElementById('update-goal-btn').classList.remove('hidden');
+            document.getElementById('show-goal-form').classList.add('hidden');
+
+            currentGoalId = null;
+        });
+
+        function deleteGoal(id) {
+            savingGoals = savingGoals.filter(goal => goal.id !== id);
+            localStorage.setItem('savingGoals', JSON.stringify(savingGoals));
+            updateGoalsList();
+
+            if (savingGoals.length === 0) {
+                document.getElementById('show-goal-form').classList.remove('hidden');
+                document.getElementById('update-goal-btn').classList.add('hidden');
+            }
+        }
+
+        function updateGoalsList() {
+            const goalsListEl = document.getElementById('goals-list');
+
+            if (savingGoals.length === 0) {
+                goalsListEl.innerHTML = `<div class="text-center p-4 text-gray-500">No goals added yet</div>`;
+            } else {
+                goalsListEl.innerHTML = savingGoals.map(goal => {
+                    const percentage = Math.min(100, Math.round((goal.currentAmount / goal.targetAmount) * 100));
+
+                    return `
+                        <div class="brutal-border p-3 bg-white mb-3">
+                            <div class="flex justify-between items-center">
+                                <span class="font-bold">Savings Goal</span>
+                                <span class="font-mono">$${goal.currentAmount.toFixed(2)} / $${goal.targetAmount.toFixed(2)}</span>
+                            </div>
+                            <div class="w-full bg-gray-200 h-4 mt-2 brutal-border border-2">
+                                <div class="bg-brutal-hot-pink h-full" style="width: ${percentage}%"></div>
+                            </div>
+                            <div class="flex justify-between items-center mt-2">
+                                <span class="text-sm">${percentage}% completed</span>
+                                <button onclick="deleteGoal(${goal.id})" class="brutal-button bg-red-200 text-xs py-1 px-2">DELETE</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        let expenseChart = null;
+        const chartColors = {
+            food: '#4ade80',
+            transportation: '#60a5fa',
+            entertainment: '#a78bfa',
+            bills: '#38bdf8',
+            salary: '#fb7185',
+            other: '#fbbf24'
+        };
+
+        function updateExpenseChart() {
+            const expenseTransactions = transactions.filter(t => t.type === 'expense');
+            const totalExpense = expenseTransactions.reduce((total, t) => total + t.amount, 0);
+
+            document.getElementById('expense-amount').textContent = `$${totalExpense.toFixed(2)}`;
+
+            if (expenseTransactions.length === 0) {
+                document.getElementById('chart-legend').innerHTML = '<div class="col-span-2 text-center text-gray-500">No expense data available</div>';
+                if (expenseChart) {
+                    expenseChart.destroy();
+                    expenseChart = null;
+                }
+                return;
+            }
+
+            const expensesByCategory = {};
+            const transactionsByCategory = {};
+
+            expenseTransactions.forEach(t => {
+                if (!expensesByCategory[t.category]) {
+                    expensesByCategory[t.category] = 0;
+                    transactionsByCategory[t.category] = [];
+                }
+                expensesByCategory[t.category] += t.amount;
+                transactionsByCategory[t.category].push(t);
+            });
+
+
+            const categories = Object.keys(expensesByCategory);
+            const amounts = Object.values(expensesByCategory);
+            const backgroundColors = categories.map(category => chartColors[category] || '#9ca3af');
+
+
+            const ctx = document.getElementById('expense-chart').getContext('2d');
+
+            if (expenseChart) {
+                expenseChart.data.labels = categories;
+                expenseChart.data.datasets[0].data = amounts;
+                expenseChart.data.datasets[0].backgroundColor = backgroundColors;
+                expenseChart.update();
+            } else {
+                expenseChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: categories,
+                        datasets: [{
+                            data: amounts,
+                            backgroundColor: backgroundColors,
+                            borderWidth: 0,
+                            hoverOffset: 4
+                        }]
+                    },
+                    options: {
+                        cutout: '70%',
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function (context) {
+                                        const value = context.raw;
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = Math.round((value / total) * 100);
+                                        return `${context.label}: $${value.toFixed(2)} (${percentage}%)`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+
+                document.getElementById('expense-chart').onclick = function (evt) {
+                    const points = expenseChart.getElementsAtEventForMode(evt, 'nearest', { intersect: true }, true);
+
+                    if (points.length) {
+                        const firstPoint = points[0];
+                        const category = expenseChart.data.labels[firstPoint.index];
+                        const transactions = transactionsByCategory[category];
+
+                        showCategoryDetails(category, transactions);
+                    }
+                };
+            }
+
+            updateChartLegend(categories, amounts, backgroundColors, totalExpense);
+        }
+
+        function updateChartLegend(categories, amounts, colors, totalExpense) {
+            const legendEl = document.getElementById('chart-legend');
+            legendEl.innerHTML = '';
+
+            categories.forEach((category, index) => {
+                const amount = amounts[index];
+                const percentage = Math.round((amount / totalExpense) * 100);
+                const color = colors[index];
+
+                const legendItem = document.createElement('div');
+                legendItem.className = 'flex items-center cursor-pointer';
+                legendItem.innerHTML = `
+                    <div class="w-3 h-3 rounded-full mr-2" style="background-color: ${color}"></div>
+                    <div>${getCategoryName(category)}</div>
+                    <div class="ml-auto">${percentage}%</div>
+                `;
+
+                legendItem.addEventListener('click', () => {
+                    showCategoryDetails(category, transactionsByCategory[category]);
+                });
+
+                legendEl.appendChild(legendItem);
+            });
+        }
+
+        function showCategoryDetails(category, transactions) {
+            const modalEl = document.getElementById('category-details-modal');
+            const titleEl = document.getElementById('modal-category-title');
+            const amountEl = document.getElementById('modal-amount');
+            const dateEl = document.getElementById('modal-date');
+            const categoriesEl = document.getElementById('modal-categories');
+            const monthlySummaryEl = document.getElementById('monthly-expenses');
+
+            if (!transactions || transactions.length === 0) return;
+
+            const latestTransaction = transactions.sort((a, b) =>
+                new Date(b.date) - new Date(a.date)
+            )[0];
+
+            titleEl.textContent = latestTransaction.title;
+
+            amountEl.textContent = `$${latestTransaction.amount.toFixed(2)}`;
+
+            const transactionDate = new Date(latestTransaction.date);
+            const formattedDate = `${transactionDate.getDate()}/${transactionDate.getMonth() + 1}/${transactionDate.getFullYear()}`;
+            dateEl.textContent = formattedDate;
+
+            const categoryNames = [
+                'Grocery', 'Shopping', 'Recharge',
+                'Food', 'Entertainment', 'Travelling'
+            ];
+
+            categoriesEl.innerHTML = '';
+            categoryNames.forEach(catName => {
+                const isSelected = catName.toLowerCase() === category;
+                const btn = document.createElement('button');
+                btn.className = `px-4 py-2 rounded-md text-sm ${isSelected ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-800'}`;
+                btn.textContent = catName;
+                categoriesEl.appendChild(btn);
+            });
+
+            const monthlyData = getMonthlyExpenses(category, transactions);
+            monthlySummaryEl.innerHTML = '';
+
+            Object.keys(monthlyData).forEach(month => {
+                const monthlyAmount = monthlyData[month];
+                const monthDiv = document.createElement('div');
+                monthDiv.className = 'flex justify-between items-center p-2 border-b border-gray-200';
+                monthDiv.innerHTML = `
+                    <span class="text-gray-700">${month}</span>
+                    <span class="font-bold">$${monthlyAmount.toFixed(2)}</span>
+                `;
+                monthlySummaryEl.appendChild(monthDiv);
+            });
+
+            document.getElementById('modal-update-btn').textContent = 'Update Expense';
+
+            modalEl.classList.remove('hidden');
+
+            document.getElementById('close-modal').addEventListener('click', () => {
+                modalEl.classList.add('hidden');
+            });
+        }
+
+
+        function getMonthlyExpenses(category, transactions) {
+            const monthlyData = {};
+            const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+            transactions.forEach(transaction => {
+                const date = new Date(transaction.date);
+                const monthYear = `${months[date.getMonth()]} ${date.getFullYear()}`;
+
+                if (!monthlyData[monthYear]) {
+                    monthlyData[monthYear] = 0;
+                }
+
+                monthlyData[monthYear] += transaction.amount;
+            });
+
+            return monthlyData;
+        }
+
+        document.getElementById('category-details-modal').addEventListener('click', function (e) {
+            if (e.target === this) {
+                this.classList.add('hidden');
+            }
+        });
+
+
+        let transactionsByCategory = {};
+
+
+        function addMockData() {
+            if (transactions.length > 0 || localStorage.getItem('budgetTransactions')) {
+                return;
+            }
+
+            const mockTransactions = [
+                {
+                    id: Date.now() - 1000000,
+                    title: 'Salary',
+                    amount: 3500,
+                    type: 'income',
+                    category: 'salary',
+                    date: new Date(2025, 4, 1).toISOString()
+                },
+                {
+                    id: Date.now() - 900000,
+                    title: 'Rent',
+                    amount: 1200,
+                    type: 'expense',
+                    category: 'bills',
+                    date: new Date(2025, 4, 3).toISOString()
+                },
+                {
+                    id: Date.now() - 800000,
+                    title: 'Groceries',
+                    amount: 250,
+                    type: 'expense',
+                    category: 'food',
+                    date: new Date(2025, 4, 5).toISOString()
+                },
+                {
+                    id: Date.now() - 700000,
+                    title: 'Movie Night',
+                    amount: 75,
+                    type: 'expense',
+                    category: 'entertainment',
+                    date: new Date(2025, 4, 7).toISOString()
+                },
+                {
+                    id: Date.now() - 600000,
+                    title: 'Uber',
+                    amount: 35,
+                    type: 'expense',
+                    category: 'transportation',
+                    date: new Date(2025, 4, 8).toISOString()
+                },
+                {
+                    id: Date.now() - 500000,
+                    title: 'Bill',
+                    amount: 120,
+                    type: 'expense',
+                    category: 'bills',
+                    date: new Date(2025, 4, 10).toISOString()
+                },
+                {
+                    id: Date.now() - 400000,
+                    title: 'Freelance Work',
+                    amount: 800,
+                    type: 'income',
+                    category: 'other',
+                    date: new Date(2025, 4, 12).toISOString()
+                },
+                {
+                    id: Date.now() - 300000,
+                    title: 'Restaurant',
+                    amount: 95,
+                    type: 'expense',
+                    category: 'food',
+                    date: new Date(2025, 4, 13).toISOString()
+                }
+            ];
+
+            transactions = mockTransactions;
+            localStorage.setItem('budgetTransactions', JSON.stringify(transactions));
+
+            if (!localStorage.getItem('savingGoals')) {
+                const mockGoal = {
+                    id: Date.now(),
+                    targetAmount: 5000,
+                    currentAmount: 1250,
+                    date: new Date().toISOString()
+                };
+
+                savingGoals = [mockGoal];
+                localStorage.setItem('savingGoals', JSON.stringify(savingGoals));
+            }
+
+            updateUI();
+            updateGoalsList();
+
+            document.getElementById('update-goal-btn').classList.remove('hidden');
+            document.getElementById('show-goal-form').classList.add('hidden');
+        }
+
+        function clearAllData() {
+            if (confirm('Are you sure you want to delete all data? This cannot be undone.')) {
+                localStorage.removeItem('budgetTransactions');
+                localStorage.removeItem('savingGoals');
+                localStorage.removeItem('budgetLimit');
+
+                transactions = [];
+                savingGoals = [];
+                budgetLimit = 0;
+
+                updateUI();
+                updateGoalsList();
+                updateBudgetFeedback();
+
+                // Reset goal buttons
+                document.getElementById('show-goal-form').classList.remove('hidden');
+                document.getElementById('update-goal-btn').classList.add('hidden');
+            }
+        }
+
+        function addClearButtons() {
+            const clearAllBtn = document.createElement('button');
+            clearAllBtn.className = 'brutal-button bg-red-200 text-xs py-1 px-2 ml-2';
+            clearAllBtn.textContent = 'Clear All Data';
+            clearAllBtn.addEventListener('click', clearAllData);
+
+
+            const goalsSection = document.getElementById('saving-goals');
+            const clearGoalsBtn = document.createElement('button');
+            clearGoalsBtn.className = 'brutal-button bg-red-200 text-xs py-1 px-2 ml-2';
+            clearGoalsBtn.textContent = 'Clear Goals';
+            clearGoalsBtn.addEventListener('click', function () {
+                if (confirm('Are you sure you want to delete all saving goals?')) {
+                    localStorage.removeItem('savingGoals');
+                    savingGoals = [];
+                    updateGoalsList();
+                    document.getElementById('show-goal-form').classList.remove('hidden');
+                    document.getElementById('update-goal-btn').classList.add('hidden');
+                }
+            });
+            goalsSection.querySelector('div').appendChild(clearGoalsBtn);
+
+            const transactionsSection = document.getElementById('transactions');
+            const clearTransactionsBtn = document.createElement('button');
+            clearTransactionsBtn.className = 'brutal-button bg-red-200 text-xs py-1 px-2 ml-2';
+            clearTransactionsBtn.textContent = 'Clear Transactions';
+            clearTransactionsBtn.addEventListener('click', function () {
+                if (confirm('Are you sure you want to delete all transactions?')) {
+                    localStorage.removeItem('budgetTransactions');
+                    transactions = [];
+                    updateUI();
+                }
+            });
+            transactionsSection.querySelector('h2').insertAdjacentElement('afterend', clearTransactionsBtn);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedGoals = localStorage.getItem('savingGoals');
+            if (savedGoals) {
+                savingGoals = JSON.parse(savedGoals);
+                updateGoalsList();
+
+                if (savingGoals.length > 0) {
+                    document.getElementById('update-goal-btn').classList.remove('hidden');
+                    document.getElementById('show-goal-form').classList.add('hidden');
+                }
+            }
+
+            setTimeout(() => {
+                addMockData();
+                addClearButtons();
+            }, 500);
+        });
+
+        document.getElementById('profile-icon').addEventListener('click', function () {
+            const dropdown = document.getElementById('profile-dropdown');
+            dropdown.classList.toggle('hidden');
+        });
+
+
+        document.addEventListener('click', function (event) {
+            const profileIcon = document.getElementById('profile-icon');
+            const dropdown = document.getElementById('profile-dropdown');
+
+            if (!profileIcon.contains(event.target) && !dropdown.contains(event.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+
+
+        document.querySelectorAll('#profile-dropdown a').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 20,
+                        behavior: 'smooth'
+                    });
+
+
+                    document.getElementById('profile-dropdown').classList.add('hidden');
+                }
+            });
+        });
+
+
+        let transactions = [];
+
+
+        const form = document.getElementById('transaction-form');
+        const titleInput = document.getElementById('title');
+        const amountInput = document.getElementById('amount');
+        const typeSelect = document.getElementById('type');
+        const categorySelect = document.getElementById('category');
+        const transactionsList = document.getElementById('transactions-list');
+        const totalIncomeEl = document.getElementById('total-income');
+        const totalExpenseEl = document.getElementById('total-expense');
+        const balanceEl = document.getElementById('balance');
+        const biggestExpenseEl = document.getElementById('biggest-expense');
+        const biggestIncomeEl = document.getElementById('biggest-income');
+        const mostSpentCategoryEl = document.getElementById('most-spent-category');
+
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTransactions = localStorage.getItem('budgetTransactions');
+            if (savedTransactions) {
+                transactions = JSON.parse(savedTransactions);
+                updateUI();
+            }
+
+
+            const savedBudgetLimit = localStorage.getItem('budgetLimit');
+            if (savedBudgetLimit) {
+                budgetLimit = parseFloat(savedBudgetLimit);
+            } else {
+
+                budgetLimit = 2000;
+                localStorage.setItem('budgetLimit', budgetLimit.toString());
+            }
+
+            // Add budget limit input in header
+            const budgetFeedbackEl = document.getElementById('budget-feedback');
+            budgetFeedbackEl.addEventListener('click', function () {
+                // Scroll to budget limit section when emoji is clicked
+                const budgetLimitSection = document.getElementById('budget-limit');
+                budgetLimitSection.scrollIntoView({ behavior: 'smooth' });
+            });
+
+            const budgetSlider = document.getElementById('budget-slider');
+            const sliderHandle = document.getElementById('slider-handle');
+
+            function updateSliderHandlePosition() {
+                const percent = (budgetSlider.value - budgetSlider.min) / (budgetSlider.max - budgetSlider.min) * 100;
+                sliderHandle.style.left = `${percent}%`;
+            }
+
+            budgetSlider.addEventListener('input', function () {
+                budgetLimit = parseFloat(this.value);
+                document.getElementById('budget-limit-display').textContent = `$${budgetLimit.toFixed(2)}`;
+                updateSliderHandlePosition();
+                updateBudgetFeedback();
+            });
+
+            budgetSlider.addEventListener('change', function () {
+                localStorage.setItem('budgetLimit', budgetLimit.toString());
+            });
+
+            let isDragging = false;
+
+            sliderHandle.addEventListener('mousedown', function (e) {
+                isDragging = true;
+                document.addEventListener('mousemove', handleDrag);
+                document.addEventListener('mouseup', stopDrag);
+                sliderHandle.classList.add('cursor-grabbing');
+                e.preventDefault();
+            });
+
+            function handleDrag(e) {
+                if (!isDragging) return;
+
+                const sliderRect = budgetSlider.getBoundingClientRect();
+                const newX = Math.max(0, Math.min(e.clientX - sliderRect.left, sliderRect.width));
+                const percentage = newX / sliderRect.width;
+
+                const newValue = Math.round((percentage * (budgetSlider.max - budgetSlider.min) + parseFloat(budgetSlider.min)) / 100) * 100;
+
+                budgetSlider.value = newValue;
+                budgetLimit = newValue;
+
+                document.getElementById('budget-limit-display').textContent = `$${budgetLimit.toFixed(2)}`;
+                sliderHandle.style.left = `${percentage * 100}%`;
+                updateBudgetFeedback();
+            }
+
+            function stopDrag() {
+                if (isDragging) {
+                    isDragging = false;
+                    document.removeEventListener('mousemove', handleDrag);
+                    document.removeEventListener('mouseup', stopDrag);
+                    sliderHandle.classList.remove('cursor-grabbing');
+                    localStorage.setItem('budgetLimit', budgetLimit.toString());
+                }
+            }
+
+            sliderHandle.addEventListener('touchstart', function (e) {
+                isDragging = true;
+                document.addEventListener('touchmove', handleTouchDrag);
+                document.addEventListener('touchend', stopDrag);
+                e.preventDefault();
+            });
+
+            function handleTouchDrag(e) {
+                if (!isDragging) return;
+
+                const touch = e.touches[0];
+                const sliderRect = budgetSlider.getBoundingClientRect();
+                const newX = Math.max(0, Math.min(touch.clientX - sliderRect.left, sliderRect.width));
+                const percentage = newX / sliderRect.width;
+
+                const newValue = Math.round((percentage * (budgetSlider.max - budgetSlider.min) + parseFloat(budgetSlider.min)) / 100) * 100;
+
+                budgetSlider.value = newValue;
+                budgetLimit = newValue;
+
+                document.getElementById('budget-limit-display').textContent = `$${budgetLimit.toFixed(2)}`;
+                sliderHandle.style.left = `${percentage * 100}%`;
+                updateBudgetFeedback();
+
+                e.preventDefault();
+            }
+
+
+            updateBudgetFeedback();
+        });
+
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+
+            const title = titleInput.value;
+            const amount = parseFloat(amountInput.value);
+            const type = typeSelect.value;
+            const category = categorySelect.value;
+
+
+            const newTransaction = {
+                id: Date.now(),
+                title,
+                amount,
+                type,
+                category,
+                date: new Date().toISOString()
+            };
+
+
+            transactions.push(newTransaction);
+
+
+            saveTransactions();
+
+
+            updateUI();
+
+
+            form.reset();
+            titleInput.focus();
+        });
+
+
+        function deleteTransaction(id) {
+            transactions = transactions.filter(transaction => transaction.id !== id);
+            saveTransactions();
+            updateUI();
+        }
+
+
+        function saveTransactions() {
+            localStorage.setItem('budgetTransactions', JSON.stringify(transactions));
+        }
+
+
+        function updateUI() {
+
+            if (transactions.length === 0) {
+                transactionsList.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="brutal-border p-4 text-center">No transactions yet</td>
+                    </tr>
+                `;
+            } else {
+                transactionsList.innerHTML = transactions.map(transaction => {
+                    const amountClass = transaction.type === 'income' ? 'text-green-600' : 'text-red-600';
+                    const amountPrefix = transaction.type === 'income' ? '+' : '-';
+
+                    return `
+                        <tr class="hover:bg-gray-100">
+                            <td class="brutal-border p-2">${transaction.title}</td>
+                            <td class="brutal-border p-2">${getCategoryName(transaction.category)}</td>
+                            <td class="brutal-border p-2 ${amountClass} font-mono">${amountPrefix}$${transaction.amount.toFixed(2)}</td>
+                            <td class="brutal-border p-2">
+                                <button onclick="deleteTransaction(${transaction.id})" class="brutal-button bg-red-200 text-xs py-1 px-2">Delete</button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+
+            updateSummary();
+        }
+
+
+        function getCategoryName(categoryKey) {
+            const categories = {
+                food: 'Food',
+                transportation: 'Transportation',
+                entertainment: 'Fun',
+                bills: 'Bills',
+                salary: 'Salary',
+                other: 'Other'
+            };
+
+            return categories[categoryKey] || categoryKey;
+        }
+
+
+        let budgetLimit = 0;
+        let currentExpenses = 0;
+
+        function updateBudgetFeedback() {
+            const income = transactions
+                .filter(t => t.type === 'income')
+                .reduce((total, t) => total + t.amount, 0);
+
+            const expense = transactions
+                .filter(t => t.type === 'expense')
+                .reduce((total, t) => total + t.amount, 0);
+
+            const balance = income - expense;
+            currentExpenses = expense;
+
+            if (budgetLimit === 0 || isNaN(budgetLimit)) {
+                if (balance < 0) {
+                    budgetLimit = Math.abs(balance);
+                } else {
+                    budgetLimit = expense;
+                }
+
+                if (budgetLimit <= 0) budgetLimit = 2000;
+            }
+
+            const budgetSlider = document.getElementById('budget-slider');
+            budgetSlider.value = budgetLimit;
+
+            const sliderHandle = document.getElementById('slider-handle');
+            const percent = (budgetSlider.value - budgetSlider.min) / (budgetSlider.max - budgetSlider.min) * 100;
+            sliderHandle.style.left = `${percent}%`;
+
+            document.getElementById('current-expenses').textContent = `$${expense.toFixed(2)}`;
+            document.getElementById('budget-limit-display').textContent = `$${budgetLimit.toFixed(2)}`;
+
+            const progressPercent = Math.min((expense / budgetLimit) * 100, 100);
+            const progressBar = document.getElementById('budget-progress');
+            progressBar.style.width = `${progressPercent}%`;
+
+            if (progressPercent > 100) {
+                progressBar.classList.remove('bg-green-600', 'bg-yellow-500');
+                progressBar.classList.add('bg-red-600');
+            } else if (progressPercent > 80) {
+                progressBar.classList.remove('bg-green-600', 'bg-red-600');
+                progressBar.classList.add('bg-yellow-500');
+            } else {
+                progressBar.classList.remove('bg-yellow-500', 'bg-red-600');
+                progressBar.classList.add('bg-green-600');
+            }
+
+            let emoji;
+
+            if (balance < 0) {
+                emoji = '😞';
+            } else if (expense > budgetLimit) {
+                emoji = '😐';
+            } else {
+                emoji = '😊';
+            }
+
+            document.getElementById('budget-emoji').textContent = emoji;
+        }
+
+
+        function updateSummary() {
+
+            const income = transactions
+                .filter(t => t.type === 'income')
+                .reduce((total, t) => total + t.amount, 0);
+
+            const expense = transactions
+                .filter(t => t.type === 'expense')
+                .reduce((total, t) => total + t.amount, 0);
+
+            const balance = income - expense;
+
+
+            totalIncomeEl.textContent = `$${income.toFixed(2)}`;
+            totalExpenseEl.textContent = `$${expense.toFixed(2)}`;
+            balanceEl.textContent = `$${balance.toFixed(2)}`;
+
+
+            if (balance > 0) {
+                balanceEl.classList.remove('text-red-600');
+                balanceEl.classList.add('text-green-600');
+            } else if (balance < 0) {
+                balanceEl.classList.remove('text-green-600');
+                balanceEl.classList.add('text-red-600');
+            } else {
+                balanceEl.classList.remove('text-green-600', 'text-red-600');
+            }
+
+
+            updateStats(income, expense);
+
+
+            updateExpenseChart();
+
+
+            updateBudgetFeedback();
+        }
+
+
+        function updateStats(income, expense) {
+
+            const biggestExpense = transactions
+                .filter(t => t.type === 'expense')
+                .sort((a, b) => b.amount - a.amount)[0];
+
+
+            const biggestIncome = transactions
+                .filter(t => t.type === 'income')
+                .sort((a, b) => b.amount - a.amount)[0];
+
+
+            const expensesByCategory = {};
+            transactions
+                .filter(t => t.type === 'expense')
+                .forEach(t => {
+                    if (!expensesByCategory[t.category]) {
+                        expensesByCategory[t.category] = 0;
+                    }
+                    expensesByCategory[t.category] += t.amount;
+                });
+
+
+            let mostSpentCategory = null;
+            let highestAmount = 0;
+
+            for (const category in expensesByCategory) {
+                if (expensesByCategory[category] > highestAmount) {
+                    highestAmount = expensesByCategory[category];
+                    mostSpentCategory = category;
+                }
+            }
+
+
+            biggestExpenseEl.textContent = biggestExpense
+                ? `${biggestExpense.title} ($${biggestExpense.amount.toFixed(2)})`
+                : '-';
+
+            biggestIncomeEl.textContent = biggestIncome
+                ? `${biggestIncome.title} ($${biggestIncome.amount.toFixed(2)})`
+                : '-';
+
+            mostSpentCategoryEl.textContent = mostSpentCategory
+                ? `${getCategoryName(mostSpentCategory)} ($${expensesByCategory[mostSpentCategory].toFixed(2)})`
+                : '-';
+        }
+    </script>
+</body>
+
+</html>
