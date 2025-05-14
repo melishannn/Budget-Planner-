@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Account Dashboard</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+
+        @keyframes pulse-slow {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.8;
+            }
+        }
+        
+
+        .card-3d {
+            transition: all 0.3s ease;
+            transform: translateY(0);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-3d:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 20px rgba(255, 255, 255, 0.2);
+            border: 1px solid white;
+        }
+        
+
+        @media (max-width: 768px) {
+            .card-3d {
+                margin-bottom: 1rem;
+            }
+            
+            .card-3d:hover {
+                transform: translateY(-3px);
+            }
+            
+            #creditCardVisual {
+                transform: perspective(800px) rotateY(3deg) !important;
+                margin: 0 auto;
+                max-width: 320px;
+            }
+            
+            #creditCardSection {
+                height: auto;
+            }
+            
+            .main-panel--collapsed,
+            .main-panel--expanded {
+                padding: 1.5rem !important;
+            }
+            
+            .sidebar--collapsed {
+                width: 0 !important;
+                overflow: hidden;
+            }
+            
+            .main-panel--collapsed {
+                margin-left: 0 !important;
+                width: 100% !important;
+            }
+            
+    
+            #ccNumber {
+                font-size: 1rem;
+            }
+            
+            .flex.justify-between.text-sm {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+        }
+        
+
+        @media (hover: none) {
+            .card-3d:active {
+                transform: translateY(-5px);
+                box-shadow: 0 15px 20px rgba(255, 255, 255, 0.2);
+                border: 1px solid white;
+            }
+        }
+        
+        #creditCardSection {
+            background-color: #111D4A !important;
+            color: #FFF8F0 !important;
+        }
+        
+        #accessChartSection {
+            background-color: #1E1E24 !important;
+            color: #FFCF99 !important;
+        }
+        
+        #expenseChartSection {
+            background-color: #FFCF99 !important;
+            color: #111D4A !important;
+        }
+        
+        #topExpensesSection {
+            background-color: #92140C !important;
+            color: #FFF8F0 !important;
+        }
+        
+        #mapSection {
+            background-color: #92140C !important;
+            color: #FFF8F0 !important;
+        }
+        
+        /* Aktif menü öğesi için stil */
+        .nav-link.active {
+            background-color: #92140C !important;
+            color: #FFF8F0 !important;
+            font-weight: bold;
+            border-left: 4px solid #FFCF99;
+        }
+        
+        .nav-link.active .link-text {
+            color: #FFCF99 !important;
+        }
+        
+        .animate-pulse-slow {
+            animation: pulse-slow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        /* 3D effects */
+        .card-3d {
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .card-3d:hover {
+            transform: translateY(-5px) perspective(1000px) rotateX(2deg);
+            box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4);
+        }
+        
+
+        .wrapper {
+            display: flex;
+            width: 100%;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background-color: #1E1E24;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            transition: width 0.3s ease;
+        }
+        
+        .sidebar--collapsed {
+            width: 60px !important;
+        }
+        
+        .sidebar--expanded {
+            width: 250px !important;
+        }
+        
+        .sidebar .logo {
+            display: flex;
+            align-items: center;
+            padding: 2px;
+        }
+    
+        
+        .sidebar-wrapper {
+            padding: 10px 0;
+        }
+        
+        .sidebar .nav {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .sidebar .nav-item {
+            margin: 5px 0;
+        }
+        
+        .sidebar .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link:focus {
+            background-color: transparent;
+            color: #FFCF99;
+        }
+        
+        .sidebar .nav-link i {
+            font-size: 1.2rem;
+            color: #FFCF99;
+            margin-right: 15px;
+        }
+        
+        .sidebar--collapsed .nav-link span.link-text {
+            visibility: hidden !important;
+        }
+        
+        .sidebar--expanded .nav-link span.link-text {
+            visibility: visible !important;
+        }
+        
+        .collapse {
+            display: none;
+        }
+        
+        .collapse.show {
+            display: block;
+        }
+        
+        .main-panel {
+            flex: 1;
+            transition: margin-left 0.3s ease, width 0.3s ease;
+        }
+        
+        .main-panel--collapsed {
+            margin-left: 60px !important;
+            width: calc(100% - 60px) !important;
+            background: linear-gradient(to bottom right, #1E1E24, #92140C, #FFF8F0);
+            color: #FFF8F0;
+            /* border-radius: 1rem; */
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+            padding: 3.25rem;
+        }
+        
+        .main-panel--expanded {
+            margin-left: 250px !important;
+            width: calc(100% - 250px) !important;
+            background: linear-gradient(to bottom right, #1E1E24, #92140C, #FFF8F0);
+            color: #FFF8F0;
+            /* border-radius: 1rem; */
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+            padding: 3.25rem;
+        }
+        
+        .copyright {
+            font-weight: 600;
+            width: 100%;
+            background-color: #FFF8F0;
+            text-align: left;
+            padding: 10px 0;
+            font-size: 14px;
+            color: #1E1E24;
+            bottom: 0;
+            border-top: 1px solid #FFCF99;
+            margin-top: 100px;
+            padding-left: 20px;
+        }
+        
+        @media (max-width: 991px) {
+            .sidebar {
+                left: auto !important;
+                transform: none !important;
+                transition: width 0.3s ease !important;
+            }
+        }
+        
+        /* Font Awesome icons replacement */
+        .fa {
+            display: inline-block;
+            width: 1em;
+            height: 1em;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        
+        .fa-align-justify::before {
+            content: '\2630';
+        }
+        
+        .fa-home::before {
+            content: '\1F3E0';
+        }
+        
+        .fa-newspaper::before {
+            content: '\1F4F0';
+        }
+        
+        .fa-users::before {
+            content: '\1F465';
+        }
+        
+        .fa-envelope::before {
+            content: '\2709';
+        }
+        
+        .fa-comments::before {
+            content: '\1F4AC';
+        }
+        
+        .fa-list::before {
+            content: '\2630';
+        }
+        
+        .button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .h-button {
+            height: 2.5rem;
+        }
+        
+        .is-white {
+            color: white;
+        }
+        
+        .is-outlined {
+            background-color: transparent;
+            border: 1px solid currentColor;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="wrapper">
+    <!-- Sidebar implementation -->
+    <div class="sidebar sidebar--collapsed" id="sidebar">
+        <div class="logo">
+            <button class="button h-button is-white" id="toggleSidebarBtn">
+                <i class="fa fa-align-justify"></i>
+            </button>
+        </div>
+        <div class="sidebar-wrapper">
+            <ul class="nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        <i class="fa fa-home"></i>
+                        <span class="link-text">Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        <i class="fa fa-newspaper"></i>
+                        <span class="link-text">Content</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        <i class="fa fa-users"></i>
+                        <span class="link-text">Users</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        <i class="fa fa-envelope"></i>
+                        <span class="link-text">Email Settings</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        <i class="fa fa-comments"></i>
+                        <span class="link-text">FAQ</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    
+    <!-- Main panel with header -->
+    <div class="main-panel main-panel--collapsed" id="mainPanel">
+        <!-- HEADER SECTION -->
+        <header class="bg-[#FFF8F0] text-[#1E1E24] shadow-lg rounded-bl-3xl rounded-br-3xl pl-6 pr-6 pt-4 pb-4 flex items-center justify-between">
+            <!-- Logo -->
+            <div class="text-2xl font-bold flex items-center space-x-2">
+                <!-- Logo SVG -->
+                <svg class="w-24 h-24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="currentColor">
+                    <defs>
+                        <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#1E1E24; stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#FFF8F0; stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                    <circle cx="50" cy="50" r="40" fill="url(#grad1)" />
+                    <path d="M30,50 Q50,20 70,50 T90,50" stroke="#92140C" stroke-width="4" fill="transparent" />
+                    <circle cx="50" cy="50" r="10" fill="#111D4A" />
+                </svg>
+
+                <span>Customer Dashboard</span>
+            </div>
+            
+
+            <button class="lg:hidden flex flex-col justify-center items-center w-10 h-10 rounded-md focus:outline-none" id="hamburgerBtn">
+                <span class="w-6 h-0.5 bg-white mb-1.5" style="transition: transform 0.25s, opacity 0.25s"></span>
+                <span class="w-6 h-0.5 bg-white mb-1.5" style="transition: opacity 0.25s"></span>
+                <span class="w-6 h-0.5 bg-white" style="transition: transform 0.25s, opacity 0.25s"></span>
+            </button>
+        </header>
+
+
+    <main class="container mx-auto px-4 py-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 relative z-0">
+
+        <section id="creditCardSection" class="card-3d bg-[#111D4A] rounded-2xl shadow-lg p-6 flex flex-col space-y-4 md:col-span-2 lg:col-span-1">
+            <div class="text-lg font-semibold text-[#FFF8F0]">Credit Card Info</div>
+            <div class="rounded-xl shadow-md p-5" id="creditCardVisual" style="background: linear-gradient(135deg, #000000, #ffffff); color: #FFF8F0; transform: perspective(800px) rotateY(6deg); transition: all 0.5s ease; transform-style: preserve-3d;">
+
+                <div class="w-10 h-6 bg-gradient-to-br from-[#FFCF99] to-[#FFCF99] rounded-md mb-4"></div>
+                
+
+                <div class="font-mono text-lg tracking-wider mb-3" id="ccNumber">**** **** **** 4978</div>
+
+                <div class="flex justify-between items-center text-sm">
+                    <div>Exp: <span id="ccExp" style="color: #92140C;">09/26</span></div>
+                    <div class="font-bold tracking-wide" id="ccType" style="color: #92140C;">VISA</div>
+                </div>
+                
+
+                <div class="mt-2 text-sm opacity-80" style="color: #1E1E24;">Name: <span id="ccName" style="color: #1E1E24;">John Smith</span></div>
+            </div>
+            
+
+            <div class="text-lg">
+                <span class="font-semibold" style="color: #92140C;">Balance:</span> 
+                <span class="text-[#FFCF99] font-bold" id="ccBalance">$9,220.75</span>
+            </div>
+            
+            <div class="flex justify-between text-sm text-[#1E1E24]">
+                <span>Limit: <span class="font-semibold" id="ccLimit" style="color: #92140C;">$15,000</span></span>
+                <span>Points: <span class="font-semibold" id="ccPoints" style="color: #92140C;">4,760</span></span>
+            </div>
+        </section>
+
+
+        <section id="accessChartSection" class="card-3d bg-[#1E1E24] rounded-2xl shadow-lg p-6 flex flex-col space-y-4">
+            <div class="text-lg font-semibold text-[#FFCF99]">Account Logins: Last 7 Days</div>
+            <div class="h-44 flex items-end justify-between" id="accessChartContainer">
+                <canvas id="accessChart" width="100%" height="100%"></canvas>
+            </div>
+            <div class="text-right text-sm text-[#FFCF99]">
+                Last updated: <span id="updated-access"></span>
+            </div>
+        </section>
+
+
+        <section id="expenseChartSection" class="card-3d bg-[#FFCF99] rounded-2xl shadow-lg p-6 flex flex-col space-y-4">
+            <div class="text-lg font-semibold text-[#111D4A]">Expenses by Category</div>
+            <div class="h-44 flex justify-center items-center" id="expChartContainer">
+                <canvas id="expenseChart" width="100%" height="100%"></canvas>
+            </div>
+            <div class="text-right text-sm text-[#1E1E24]">
+                Real-time data
+            </div>
+        </section>
+
+
+        <div class="col-span-1 md:col-span-2 lg:col-span-3 grid grid-cols-1 md:grid-cols-12 gap-6">
+
+            <section id="topExpensesSection" class="card-3d bg-[#92140C] rounded-2xl shadow-lg p-6 flex flex-col space-y-4 md:col-span-5">
+                <div class="text-lg font-semibold text-[#FFF8F0] flex justify-between items-center">
+                    <span>Top Expenses</span>
+                    <span class="text-xs text-[#FFCF99]">Last updated: <span id="lastUpdated"></span></span>
+                </div>
+                
+
+                <div class="h-44" id="liveDataChartContainer">
+                    <canvas id="liveDataChart"></canvas>
+                </div>
+                
+
+                <div class="flex flex-col space-y-3" id="expList">
+
+                </div>
+                
+                <div class="text-right text-sm text-[#FFF8F0]">
+                    Sorted by amount - Live Data
+                </div>
+            </section>
+
+
+            <section id="mapSection" class="card-3d-map bg-[#92140C] rounded-2xl shadow-lg p-6 flex flex-col space-y-4 md:col-span-7">
+                <div class="text-lg font-semibold text-[#FFF8F0]">Countries</div>
+                <div class="h-80 flex justify-center items-center" id="mapContainer">
+                    <img src="https://images.unsplash.com/vector-1743529708395-6fa607a7c72a?q=80&w=1480&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Map" class="max-h-full rounded-lg" />
+                </div>
+            </section>
+        </div>
+    </main>
+
+
+    <footer class="bg-[#FFF8F0] py-6 text-center text-[#1E1E24] shadow-inner rounded-t-3xl mt-8">
+        &copy; 2025 Account Dashboard &mdash; All Rights Reserved
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+
+            
+
+            window.addEventListener('resize', function() {
+                if (window.innerWidth >= 1024) { 
+                    mainNav.classList.remove('hidden', 'flex-col', 'absolute', 'top-16', 'right-6', 'bg-indigo-600', 'p-4', 'rounded-xl', 'shadow-lg');
+                    mainNav.classList.add('flex');
+                    
+                    hamburgerBtn.classList.remove('active');
+                    const spans = hamburgerBtn.querySelectorAll('span');
+                    spans[0].style.transform = 'none';
+                    spans[1].style.opacity = '1';
+                    spans[2].style.transform = 'none';
+                } else if (!hamburgerBtn.classList.contains('active')) {
+                    mainNav.classList.add('hidden');
+                    mainNav.classList.remove('flex');
+                }
+            });
+            
+            function formatCurrency(amount) {
+                return new Intl.NumberFormat('en-US', { 
+                    style: 'currency', 
+                    currency: 'USD',
+                    minimumFractionDigits: 2
+                }).format(amount);
+            }
+            
+            function createCreditCardData() {
+                const creditData = {
+                    number: '**** **** **** 4978',
+                    exp: '09/26',
+                    type: 'VISA',
+                    name: 'John Smith',
+                    balance: 9220.75,
+                    limit: 15000,
+                    points: 4760
+                };
+                
+                document.getElementById('ccNumber').textContent = creditData.number;
+                document.getElementById('ccExp').textContent = creditData.exp;
+                document.getElementById('ccType').textContent = creditData.type;
+                document.getElementById('ccName').textContent = creditData.name;
+                document.getElementById('ccBalance').textContent = formatCurrency(creditData.balance);
+                document.getElementById('ccLimit').textContent = formatCurrency(creditData.limit);
+                document.getElementById('ccPoints').textContent = creditData.points.toLocaleString('en-US');
+                
+                const card = document.getElementById('creditCardVisual');
+                
+                const cardNumber = document.getElementById('ccNumber');
+                const cardChip = card.querySelector('.w-10.h-6');
+                const cardDetails = card.querySelectorAll('.flex.justify-between.items-center div');
+                
+                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+                
+                const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
+                
+                if (!isMobile) {
+                    card.addEventListener('mousemove', function(e) {
+                        const rect = this.getBoundingClientRect();
+                        const x = e.clientX - rect.left; 
+                        const y = e.clientY - rect.top;  
+                        
+                        const centerX = rect.width / 2;
+                        const centerY = rect.height / 2;
+                        
+                        const rotateY = ((x - centerX) / centerX) * 15; 
+                        const rotateX = ((centerY - y) / centerY) * 15; 
+                        
+                        this.style.transform = `perspective(800px) rotateY(${rotateY}deg) rotateX(${rotateX}deg)`;
+                        
+                        cardChip.style.transform = `translateZ(25px) translateX(${rotateY/2}px) translateY(${rotateX/2}px)`;
+                        cardNumber.style.transform = `translateZ(20px) translateX(${rotateY/3}px) translateY(${rotateX/3}px)`;
+                        
+                        cardDetails.forEach((detail, index) => {
+                            detail.style.transform = `translateZ(${15 + index * 5}px) translateX(${rotateY/(4+index)}px) translateY(${rotateX/(4+index)}px)`;
+                        });
+                        
+                        const shine = `radial-gradient(circle at ${x}px ${y}px, rgba(255,255,255,0.2), transparent)`;
+                        this.style.backgroundImage = `linear-gradient(135deg, #000000, #ffffff), ${shine}`;
+                    });
+                    
+                    card.addEventListener('mouseenter', function() {
+                        this.style.transition = 'transform 0.1s ease';
+                        
+                        cardChip.style.transition = 'transform 0.1s ease';
+                        cardNumber.style.transition = 'transform 0.1s ease';
+                        cardDetails.forEach(detail => {
+                            detail.style.transition = 'transform 0.1s ease';
+                        });
+                    });
+                    
+                    card.addEventListener('mouseleave', function() {
+                        this.style.transition = 'transform 0.5s ease, background-image 0.5s ease';
+                        this.style.transform = 'perspective(800px) rotateY(6deg) rotateX(0)';
+                        this.style.backgroundImage = 'linear-gradient(135deg, #000000, #ffffff)';
+                        
+                        cardChip.style.transition = 'transform 0.5s ease';
+                        cardChip.style.transform = 'translateZ(0) translateX(0) translateY(0)';
+                        
+                        cardNumber.style.transition = 'transform 0.5s ease';
+                        cardNumber.style.transform = 'translateZ(0) translateX(0) translateY(0)';
+                        
+                        cardDetails.forEach(detail => {
+                            detail.style.transition = 'transform 0.5s ease';
+                            detail.style.transform = 'translateZ(0) translateX(0) translateY(0)';
+                        });
+                    });
+                }
+                
+                if (isTouchDevice) {
+                    card.addEventListener('touchstart', function() {
+                        this.style.transform = 'perspective(800px) rotateY(12deg) rotateX(5deg)';
+                    });
+                    
+                    card.addEventListener('touchend', function() {
+                        this.style.transform = 'perspective(800px) rotateY(6deg) rotateX(0)';
+                    });
+                }
+            }
+            
+            function getLastNDays(n) {
+                const days = [];
+                for (let i = n - 1; i >= 0; i--) {
+                    const date = new Date();
+                    date.setDate(date.getDate() - i);
+                    days.push(date.toLocaleDateString('en-US', { weekday: 'short' }));
+                }
+                return days;
+            }
+            
+            function generateRandomLogins() {
+                return Array.from({ length: 7 }, () => Math.floor(Math.random() * 10) + 1);
+            }
+            
+            function createAccessChart() {
+                const container = document.getElementById('accessChartContainer');
+                container.innerHTML = '<canvas id="accessChart"></canvas>';
+                
+                const days = getLastNDays(7);
+                const logins = generateRandomLogins();
+                
+                const ctx = document.getElementById('accessChart').getContext('2d');
+                
+                const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+                gradient.addColorStop(0, 'rgba(146, 20, 12, 0.8)');
+                gradient.addColorStop(1, 'rgba(146, 20, 12, 0.1)');
+                
+                const chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: days,
+                        datasets: [{
+                            label: 'Günlük Giriş Sayısı',
+                            data: logins,
+                            backgroundColor: gradient,
+                            borderColor: '#FFCF99',
+                            borderWidth: 3,
+                            pointBackgroundColor: '#FFF8F0',
+                            pointBorderColor: '#92140C',
+                            pointBorderWidth: 2,
+                            pointRadius: 6,
+                            pointHoverRadius: 8,
+                            pointHoverBackgroundColor: '#FFCF99',
+                            pointHoverBorderColor: '#111D4A',
+                            pointHoverBorderWidth: 2,
+                            tension: 0.3,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            tooltip: {
+                                mode: 'index',
+                                intersect: false,
+                                backgroundColor: '#111D4A',
+                                titleColor: '#FFCF99',
+                                bodyColor: '#FFF8F0',
+                                borderColor: '#92140C',
+                                borderWidth: 1,
+                                callbacks: {
+                                    title: function(tooltipItems) {
+                                        return 'Date: ' + tooltipItems[0].label;
+                                    },
+                                    label: function(context) {
+                                        return 'Login Count: ' + context.raw;
+                                    }
+                                }
+                            },
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: {
+                                    display: false,
+                                    drawBorder: false
+                                },
+                                ticks: {
+                                    color: '#FFCF99'
+                                }
+                            },
+                            y: {
+                                grid: {
+                                    color: 'rgba(255, 207, 153, 0.1)',
+                                    drawBorder: false
+                                },
+                                ticks: {
+                                    color: '#FFCF99',
+                                    precision: 0
+                                },
+                                beginAtZero: true
+                            }
+                        },
+                        interaction: {
+                            mode: 'nearest',
+                            axis: 'x',
+                            intersect: false
+                        },
+                        onClick: function(event, elements) {
+                            if (elements.length > 0) {
+                                const index = elements[0].index;
+                                alert(`${days[index]} tarihinde ${logins[index]} giriş yapıldı.`);
+                            }
+                        },
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        layout: {
+                            padding: {
+                                left: window.innerWidth < 768 ? 5 : 10,
+                                right: window.innerWidth < 768 ? 5 : 10,
+                                top: window.innerWidth < 768 ? 5 : 10,
+                                bottom: window.innerWidth < 768 ? 5 : 10
+                            }
+                        }
+                    }
+                });
+                
+                document.getElementById('updated-access').textContent = new Date().toLocaleTimeString();
+                
+                return chart;
+            }
+            
+            function createExpenseChart() {
+                const container = document.getElementById('expChartContainer');
+                container.innerHTML = '';
+                
+                const canvas = document.createElement('canvas');
+                canvas.width = container.clientWidth;
+                canvas.height = container.clientHeight;
+                container.appendChild(canvas);
+                
+                const expenses = [
+                    { label: 'Food', icon: '', color: '#FF6384', amount: 450 },
+                    { label: 'Transport', icon: '', color: '#36A2EB', amount: 350 },
+                    { label: 'Entertainment', icon: '', color: '#FFCE56', amount: 200 },
+                    { label: 'Shopping', icon: '', color: '#4BC0C0', amount: 500 },
+                    { label: 'Bills', icon: '', color: '#9966FF', amount: 700 }
+                ];
+                
+                const total = expenses.reduce((sum, item) => sum + item.amount, 0);
+                
+                const ctx = canvas.getContext('2d');
+                let startAngle = 0;
+                
+                expenses.forEach(expense => {
+                    const sliceAngle = (expense.amount / total) * 2 * Math.PI;
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(canvas.width / 2, canvas.height / 2);
+                    ctx.arc(canvas.width / 2, canvas.height / 2, Math.min(canvas.width, canvas.height) / 2 - 10, startAngle, startAngle + sliceAngle);
+                    ctx.closePath();
+                    
+                    ctx.fillStyle = expense.color;
+                    ctx.fill();
+                    
+                    startAngle += sliceAngle;
+                });
+                
+                const listContainer = document.getElementById('expList');
+                listContainer.innerHTML = '';
+                
+                async function fetchExpenseData() {
+                    try {
+                        const mockApiResponse = {
+                            expenses: [
+                                { id: 1, category: 'Bills', name: 'Elektrik Faturası', amount: 529.91, icon: '', timestamp: new Date().getTime() },
+                                { id: 2, category: 'Bills', name: 'Su Faturası', amount: 529.91, icon: '', timestamp: new Date().getTime() - 86400000 },
+                                { id: 3, category: 'Shopping', name: 'Market Alışverişi', amount: 342.11, icon: '', timestamp: new Date().getTime() - 172800000 },
+                                { id: 4, category: 'Shopping', name: 'Giyim Alışverişi', amount: 292.50, icon: '', timestamp: new Date().getTime() - 259200000 },
+                                { id: 5, category: 'Food', name: 'Restoran', amount: 253.27, icon: '', timestamp: new Date().getTime() - 345600000 },
+                                { id: 6, category: 'Transport', name: 'Yakıt', amount: 220.15, icon: '', timestamp: new Date().getTime() - 432000000 },
+                                { id: 7, category: 'Entertainment', name: 'Sinema', amount: 180.00, icon: '', timestamp: new Date().getTime() - 518400000 }
+                            ]
+                        };
+                        
+                        const categories = {};
+                        mockApiResponse.expenses.forEach(expense => {
+                            if (!categories[expense.category]) {
+                                categories[expense.category] = 0;
+                            }
+                            categories[expense.category] += expense.amount;
+                        });
+                        
+                        const labels = Object.keys(categories);
+                        const data = Object.values(categories);
+                        const backgroundColors = [
+                            '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'
+                        ];
+                        
+                        const chartContainer = document.getElementById('liveDataChartContainer');
+                        chartContainer.innerHTML = '<canvas id="liveDataChart"></canvas>';
+                        
+                        const ctx = document.getElementById('liveDataChart').getContext('2d');
+                        new Chart(ctx, {
+                            type: 'doughnut',
+                            data: {
+                                labels: labels,
+                                datasets: [{
+                                    data: data,
+                                    backgroundColor: backgroundColors,
+                                    borderColor: '#FFF8F0',
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                legend: {
+                                    display: false
+                                },
+                                animation: {
+                                    animateScale: true,
+                                    animateRotate: true
+                                }
+                            }
+                        });
+                        
+                        mockApiResponse.expenses.sort((a, b) => b.amount - a.amount);
+                        
+                        mockApiResponse.expenses.slice(0, 5).forEach(expense => {
+                            const item = document.createElement('div');
+                            item.className = 'flex justify-between items-center py-2 border-b border-[#FFF8F0] border-opacity-20';
+                            
+                            const labelContainer = document.createElement('div');
+                            labelContainer.className = 'flex items-center';
+                            
+                            const icon = document.createElement('span');
+                            icon.className = 'mr-2';
+                            icon.textContent = expense.icon;
+                            
+                            const label = document.createElement('span');
+                            label.className = 'text-[#FFF8F0]';
+                            label.textContent = expense.name;
+                            
+                            const amount = document.createElement('span');
+                            amount.className = 'font-semibold text-[#FFCF99]';
+                            amount.textContent = formatCurrency(expense.amount);
+                            
+                            labelContainer.appendChild(icon);
+                            labelContainer.appendChild(label);
+                            item.appendChild(labelContainer);
+                            item.appendChild(amount);
+                            
+                            listContainer.appendChild(item);
+                        });
+                        
+                        document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString();
+                    } catch (error) {
+                        console.error('Veri çekilirken hata oluştu:', error);
+                        document.getElementById('expList').innerHTML = '<div class="text-red-500">Veri yüklenirken bir hata oluştu</div>';
+                    }
+                }
+                
+                fetchExpenseData();
+            }
+            
+            createCreditCardData();
+            createAccessChart();
+            createExpenseChart();
+            
+            setInterval(() => {
+                createAccessChart();
+                createExpenseChart();
+            }, 10000); 
+            
+            const sidebar = document.getElementById('sidebar');
+            const mainPanel = document.getElementById('mainPanel');
+            const toggleSidebarBtn = document.getElementById('toggleSidebarBtn');
+            const hamburgerBtn = document.getElementById('hamburgerBtn');
+            const mainNav = document.getElementById('mainNav');
+            const dropdownToggle = document.getElementById('dropdownToggle');
+            const reportsMenu = document.getElementById('reportsMenu');
+            let dropdownOpen = false;
+            
+            toggleSidebarBtn.addEventListener('click', function() {
+                if (sidebar.classList.contains('sidebar--collapsed')) {
+                    sidebar.classList.remove('sidebar--collapsed');
+                    sidebar.classList.add('sidebar--expanded');
+                    
+                    mainPanel.classList.remove('main-panel--collapsed');
+                    mainPanel.classList.add('main-panel--expanded');
+                } else {
+                    sidebar.classList.add('sidebar--collapsed');
+                    sidebar.classList.remove('sidebar--expanded');
+                    
+                    mainPanel.classList.add('main-panel--collapsed');
+                    mainPanel.classList.remove('main-panel--expanded');
+                    
+                    dropdownOpen = false;
+                    reportsMenu.classList.remove('show');
+                }
+            });
+            
+            hamburgerBtn.addEventListener('click', function() {
+                if (mainNav.classList.contains('hidden')) {
+                    mainNav.classList.remove('hidden');
+                    mainNav.classList.add('flex', 'flex-col', 'absolute', 'top-16', 'right-6', 'bg-[#111D4A]', 'p-4', 'rounded-xl', 'shadow-lg');
+                    
+                    const spans = this.querySelectorAll('span');
+                    spans[0].style.transform = 'translateY(10px) rotate(45deg)';
+                    spans[1].style.opacity = '0';
+                    spans[2].style.transform = 'translateY(-10px) rotate(-45deg)';
+                } else {
+                    mainNav.classList.add('hidden');
+                    mainNav.classList.remove('flex', 'flex-col', 'absolute', 'top-16', 'right-6', 'bg-[#111D4A]', 'p-4', 'rounded-xl', 'shadow-lg');
+                    
+                    // Restore hamburger icon to original state
+                    const spans = this.querySelectorAll('span');
+                    spans[0].style.transform = 'none';
+                    spans[1].style.opacity = '1';
+                    spans[2].style.transform = 'none';
+                }
+            });
+            
+            // Tüm menü öğelerine tıklama olayı ekle
+            const navLinks = document.querySelectorAll('.sidebar-wrapper .nav-link');
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Tıklandığında her zaman sidebar'ı kapat ve sayfayı genişlet
+                    sidebar.classList.add('sidebar--collapsed');
+                    sidebar.classList.remove('sidebar--expanded');
+                    
+                    // Ana panel genişliğini ayarla
+                    mainPanel.classList.add('main-panel--collapsed');
+                    mainPanel.classList.remove('main-panel--expanded');
+                    
+                    // Aktif menü öğesini işaretle
+                    navLinks.forEach(item => item.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Burada sayfa içeriğini değiştirme işlemi yapılabilir
+                    // Örnek olarak bir alert gösterelim
+                    const menuText = this.querySelector('.link-text').textContent;
+                    console.log(`${menuText} menüsüne tıklandı`);
+                });
+            });
+            
+            // Adjust menu when screen size changes
+            window.addEventListener('resize', function() {
+                if (window.innerWidth >= 1024) { // lg breakpoint
+                    mainNav.classList.remove('hidden', 'flex', 'flex-col', 'absolute', 'top-16', 'right-6', 'bg-[#111D4A]', 'p-4', 'rounded-xl', 'shadow-lg');
+                    mainNav.classList.add('flex');
+                    
+                    // Restore hamburger icon to original state
+                    const spans = hamburgerBtn.querySelectorAll('span');
+                    spans[0].style.transform = 'none';
+                    spans[1].style.opacity = '1';
+                    spans[2].style.transform = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
